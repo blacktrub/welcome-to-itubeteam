@@ -6,9 +6,9 @@ import googleapiclient.discovery
 import googleapiclient.errors
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import Resource
+from googleapiclient.errors import HttpError
 
 SCOPES = [
-    "https://www.googleapis.com/auth/youtube.readonly",
     "https://www.googleapis.com/auth/youtube.force-ssl",
 ]
 SECRET_FILE_NAME = "secret.json"
@@ -68,16 +68,22 @@ def update_video_tags(api: Resource, video: dict) -> None:
         return
 
     tags.append(TARGET_TAG)
+    video_id = video["id"]
+    video_title = video["snippet"]["title"]
     body = {
-        "id": video["id"],
+        "id": video_id,
         "snippet": {
-            "title": video["snippet"]["title"],
+            "title": video_title,
             "categoryId": video["snippet"]["categoryId"],
             "tags": tags,
         },
     }
-    # TODO: check response
-    api.videos().update(part="snippet", body=body).execute()
+
+    try:
+        api.videos().update(part="snippet", body=body).execute()
+    except HttpError as e:
+        print(f'Error happend when update a video "{video_id}" "{video_title}"')
+        print(f"Reason: {e.reason}")
 
 
 def get_extended_videos(api: Resource, videos_ids: list) -> list:
