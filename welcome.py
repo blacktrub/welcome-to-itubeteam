@@ -1,11 +1,10 @@
 import os
 from typing import Iterator
 
-import google_auth_oauthlib.flow
-import googleapiclient.discovery
-import googleapiclient.errors
 from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import Resource
+from googleapiclient.discovery import build as build_google_api_client
 from googleapiclient.errors import HttpError
 
 SCOPES = [
@@ -20,7 +19,7 @@ def request_credentials() -> Credentials:
     # *DO NOT* leave this option enabled in production.
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
-    flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
+    flow = InstalledAppFlow.from_client_secrets_file(
         SECRET_FILE_NAME,
         SCOPES,
     )
@@ -28,7 +27,7 @@ def request_credentials() -> Credentials:
 
 
 def build_api(credentials: Credentials) -> Resource:
-    return googleapiclient.discovery.build("youtube", "v3", credentials=credentials)
+    return build_google_api_client("youtube", "v3", credentials=credentials)
 
 
 def get_uploads_playlist_id(api: Resource) -> str:
